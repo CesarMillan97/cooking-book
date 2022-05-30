@@ -8,9 +8,10 @@ import Searchbar from './Searchbar'
 
 export default function Navbar() {
    const { color } = useTheme()
+
   return (
     <div className='navbar' style={{ background: color }}>
-       <nav>
+       <nav >
           <Link to='/' className='brand'>
              <h1>Home</h1>
           </Link>
