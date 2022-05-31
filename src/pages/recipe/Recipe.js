@@ -1,6 +1,7 @@
+import { projectFirestore } from '../../firebase/config'
 import { useParams } from 'react-router-dom'
-import { useFetch } from '../../Hooks/useFetch'
 import { useTheme } from '../../Hooks/useTheme'
+import { useState, useEffect } from 'react'
 
 // styles 
 import './Recipe.css'
@@ -8,9 +9,35 @@ import './Recipe.css'
 
 export default function Recipe() {
   const { id } = useParams()
-  const url = 'http://localhost:3000/recipes/' + id
-  const { data, error, isPending } = useFetch(url)
+  const [ data, setData ] = useState(null)
+  const [ error, setError ] = useState(null)
+  const [ isPending, setIsPending ] = useState(null)
+
   const { mode } = useTheme()
+
+  const handleClick = () => {
+    projectFirestore.collection('recipes').doc(id).update({
+      method: 'This is the new method 3.0'
+    })
+  }
+
+  useEffect(() => {
+    setIsPending(true)
+    const unsub = projectFirestore.collection('recipes').doc(id).onSnapshot((doc) => {
+      if (doc.exists) {
+        setIsPending(false)
+        setError(null)
+        setData(doc.data())
+      } else {
+        setError('That recipe does not exist')
+        setIsPending(false)
+      }
+    }, err => {
+      setError(err.message)
+    })
+
+    return () => unsub()
+  },[id])
 
   return (
     <div className={`recipe ${mode}`}>
@@ -26,6 +53,7 @@ export default function Recipe() {
             ))}
           </ul>
           <p className='method'>{data.method}</p>
+          <button onClick={() => handleClick()}>Update me</button>
         </>
        }
     </div>
